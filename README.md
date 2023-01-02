@@ -12,8 +12,8 @@ What is discussed in this lesson:
 
 2. How to go from Jupyter to Production:
 
-    <img src="01-intro/jupyter_to_production.png", alt="jupyter to production", width="500"/>
+    ![jupyter to production](01-intro/jupyter_to_production.png)
 
 3. Explanation of the Maturity Model:
 
-    <img src="01-intro/maturity_model.png", alt="maturity model", width="500"/>
+    ![maturity model](01-intro/maturity_model.png)
