@@ -1,0 +1,1 @@
+mlflow ui --backend-store-uri sqlite:///mlflow.db -p 5001 
