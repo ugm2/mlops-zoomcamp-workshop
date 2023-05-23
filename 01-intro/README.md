@@ -8,8 +8,8 @@ What is discussed in this lesson:
 
 2. How to go from Jupyter to Production:
 
-    ![jupyter to production](01-intro/jupyter_to_production.png)
+    ![jupyter to production](jupyter_to_production.png)
 
 3. Explanation of the Maturity Model:
 
-    ![maturity model](01-intro/maturity_model.png)
+    ![maturity model](maturity_model.png)
