@@ -12,7 +12,7 @@ What is discussed in this lesson:
 
     ![et intro](02-experiment-tracking/experiment_tracking_intro.jpg)
 
-2. ET workflow (external source):
+2. ET workflow:
 
     ![et workflow](02-experiment-tracking/experiment_tracking_workflow.jpg)
 
