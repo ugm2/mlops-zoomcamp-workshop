@@ -42,6 +42,7 @@ def run_optimization(data_path: str, num_trials: int):
                 "random_state": 42,
                 "n_jobs": -1,
             }
+            mlflow.log_params(params)
 
             rf = RandomForestRegressor(**params)
             rf.fit(X_train, y_train)
