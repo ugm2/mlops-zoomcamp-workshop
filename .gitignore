@@ -131,3 +131,9 @@ dmypy.json
 .vscode/
 
 .DS_Store
+
+# Prefect
+.prefect/
+.prefectignore
+deployment.yaml
+prefect.yaml

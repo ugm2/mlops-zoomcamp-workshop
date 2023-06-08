@@ -10,12 +10,12 @@ What is discussed in this lesson:
 
 1. Experiment Tracking (ET) intro:
 
-    ![et intro](02-experiment-tracking/experiment_tracking_intro.jpg)
+    ![et intro](experiment_tracking_intro.jpg)
 
 2. ET workflow:
 
-    ![et workflow](02-experiment-tracking/experiment_tracking_workflow.jpg)
+    ![et workflow](experiment_tracking_workflow.jpg)
 
 3. ET Tools:
 
-    ![et tools](02-experiment-tracking/experiment_tracking_tools.jpg)
+    ![et tools](experiment_tracking_tools.jpg)
