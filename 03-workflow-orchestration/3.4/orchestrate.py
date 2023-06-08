@@ -11,9 +11,6 @@ import mlflow
 import xgboost as xgb
 from prefect import flow, task, get_run_logger
 
-logger = get_run_logger()
-logger.info(os.getcwd())
-
 
 @task(retries=3, retry_delay_seconds=2)
 def read_data(filename: str) -> pd.DataFrame:
@@ -119,6 +116,9 @@ def main_flow(
     val_path: str = "./03-workflow-orchestration/data/green_tripdata_2021-02.parquet",
 ) -> None:
     """The main training pipeline"""
+
+    logger = get_run_logger()
+    logger.info(os.getcwd())
 
     # MLflow settings
     mlflow.set_tracking_uri("sqlite:///mlflow.db")
