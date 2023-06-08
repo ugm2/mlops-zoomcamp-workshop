@@ -1,3 +1,4 @@
+import os
 import pathlib
 import pickle
 import pandas as pd
@@ -8,7 +9,10 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics import mean_squared_error
 import mlflow
 import xgboost as xgb
-from prefect import flow, task
+from prefect import flow, task, get_run_logger
+
+logger = get_run_logger()
+logger.info(os.getcwd())
 
 
 @task(retries=3, retry_delay_seconds=2)
