@@ -118,6 +118,7 @@ def main_flow(
     """The main training pipeline"""
 
     logger = get_run_logger()
+    logger.info("HEY HERE!")
     logger.info(os.getcwd())
 
     # MLflow settings
