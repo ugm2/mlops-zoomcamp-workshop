@@ -137,3 +137,9 @@ dmypy.json
 .prefectignore
 deployment.yaml
 prefect.yaml
+
+# MLFlow
+mlflow.db
+data/
+mlruns/
+models/

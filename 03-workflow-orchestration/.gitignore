@@ -3,3 +3,5 @@
 *mlartifacts/
 *wandb/
 *models/
+*/.env
+!deployment.yaml
