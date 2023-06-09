@@ -18,12 +18,12 @@ def create_gcs_bucket_block():
 
     # The following line creates a bucket in Google Cloud Storage. You might want to replace this with the
     # appropriate code if the bucket already exists.
-    gcp_creds.get_cloud_storage_client().create_bucket("mlops-zoomcamp-bucket")
+    gcp_creds.get_cloud_storage_client().create_bucket("mlops-zoomcamp-bucke-2")
 
     my_gcs_bucket_obj = GcsBucket(
-        bucket="mlops-zoomcamp-bucket", gcp_credentials=gcp_creds
+        bucket="mlops-zoomcamp-bucke-2", gcp_credentials=gcp_creds
     )
-    my_gcs_bucket_obj.save(name="mlops-zoomcamp-bucket", overwrite=True)
+    my_gcs_bucket_obj.save(name="mlops-zoomcamp-bucke-2", overwrite=True)
 
 
 if __name__ == "__main__":
