@@ -142,7 +142,7 @@ def main_flow_gs(
     mlflow.set_experiment("nyc-taxi-experiment")
 
     # Load data from GCS
-    gs_bucket = GcsBucket.load("mlops-zoomcamp")
+    gs_bucket = GcsBucket.load("mlops-zoomcamp-bucke-2")
     gs_bucket.download_folder_to_path(from_folder="data/", to_folder="data/")
 
     # Load it now from folder
