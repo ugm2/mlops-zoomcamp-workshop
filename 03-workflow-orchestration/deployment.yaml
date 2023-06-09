@@ -1,6 +1,6 @@
 deployments:
 - name: taxi_local_data
-  entrypoint: 03-workflow-orchestration/3.4/orchestrate_gs.py:main_flow
+  entrypoint: 03-workflow-orchestration/3.4/orchestrate.py:main_flow
   workpool:
     name: zoompool
 - name: taxi_gs_data
