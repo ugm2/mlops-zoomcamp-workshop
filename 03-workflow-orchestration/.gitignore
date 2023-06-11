@@ -5,3 +5,4 @@
 *models/
 */.env
 !deployment.yaml
+!data/
