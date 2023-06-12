@@ -94,4 +94,22 @@ Test the notification functionality by running a deployment.
 
 4. `python3 03-workflow-orchestration/homework/register_email_block.py`
 
-5.
+5. `prefect deploy 03-workflow-orchestration/homework/orchestrate_q5.py:homework_flow_q5 -n homework_email -p zoompool`
+
+6. `prefect worker start -p zoompool`
+
+7. Start flow run from UI.
+
+8. Receive email:
+
+    ![Email](email-received.png)
+
+What is the name of the pre-built prefect-email task function?
+
+* send_email_message
+
+* --> **email_send_message** <--
+
+* send_email
+
+* send_message
