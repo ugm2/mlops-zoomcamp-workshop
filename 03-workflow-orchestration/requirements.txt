@@ -10,3 +10,4 @@ seaborn==0.12.2
 xgboost==1.7.5
 orjson==3.8.1
 prefect-gcp==0.4.2
+prefect-email==0.2.2

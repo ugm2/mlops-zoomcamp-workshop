@@ -65,3 +65,33 @@ What’s the RMSE in the artifact to two decimal places ?
 * 15.33
 
 * --> **5.37** <--
+
+## Q5. Emails
+
+It’s often helpful to be notified when something with your dataflow doesn’t work as planned. Create an email notification for to use with your own Prefect server instance. In your virtual environment, install the prefect-email integration with
+
+`pip install prefect-email`
+
+Make sure you are connected to a running Prefect server instance through your Prefect profile. See the docs if needed: <https://docs.prefect.io/latest/concepts/settings/#configuration-profiles>
+
+Register the new block with your server with
+
+`prefect block register -m prefect_email`
+
+Remember that a block is a Prefect class with a nice UI form interface. Block objects live on the server and can be created and accessed in your Python code.
+
+See the docs for how to authenticate by saving your email credentials to a block and note that you will need an App Password to send emails with Gmail and other services. Follow the instructions in the docs.
+
+Create and save an EmailServerCredentials notification block. Use the credentials block to send an email.
+
+Test the notification functionality by running a deployment.
+
+1. `pip install prefect-email`
+
+2. `prefect block register -m prefect_email`
+
+3. `prefect server start`
+
+4. `python3 03-workflow-orchestration/homework/register_email_block.py`
+
+5.
