@@ -113,3 +113,25 @@ What is the name of the pre-built prefect-email task function?
 * send_email
 
 * send_message
+
+## Q6. Prefect Cloud
+
+The hosted Prefect Cloud lets you avoid running your own Prefect server and has automations that allow you to get notifications when certain events occur or don’t occur.
+
+Create a free forever Prefect Cloud account at app.prefect.cloud and connect your workspace to it following the steps in the UI when you sign up.
+
+Set up an Automation from the UI that will send yourself an email when a flow run completes. Run one of your existing deployments and check your email to see the notification.
+
+Make sure your active profile is pointing toward Prefect Cloud and make sure you have a worker active.
+
+What is the name of the second step in the Automation creation process?
+
+* Details
+
+* Trigger
+
+* --> **Actions** <--
+
+* The end
+
+To run it through Cloud Run follow these instructions: [Serverless Prefect Flows with Google Cloud Run Jobs](https://medium.com/the-prefect-blog/serverless-prefect-flows-with-google-cloud-run-jobs-23edbf371175)
