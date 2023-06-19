@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  taxi-predictor:
+    build: .
+    ports:
+      - "9696:9696"
+    environment:
+      - MODEL_URI=mlartifacts/1/bd433755594b4ef2acac2d9cee48853c/artifacts/model
