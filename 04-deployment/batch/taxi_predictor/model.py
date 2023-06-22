@@ -1,4 +1,5 @@
 import os
+import tempfile
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction import DictVectorizer
@@ -8,10 +9,11 @@ from sklearn.pipeline import make_pipeline
 import mlflow
 import mlflow.pyfunc
 from uuid import uuid4
-from taxi_predictor.utils import upload_to_gcs
+from taxi_predictor.utils import download_from_gcs, upload_to_gcs
 
 if os.environ.get("MLFLOW_TRACKING_URI") is None:
     os.environ["MLFLOW_TRACKING_URI"] = "http://localhost:5001"
+bucket_name = os.environ.get("BUCKET_NAME", "mlops-zoomcamp-bucket")
 
 mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
 mlflow.set_experiment("green-taxi-duration")
@@ -26,7 +28,24 @@ class TaxiRidePredictor(BaseEstimator, TransformerMixin):
             self.load_model(model_uri)
 
     def load_model(self, model_uri):
-        self.model = mlflow.pyfunc.load_model(model_uri)
+        # Check if the model URI is from Google Cloud Storage
+        if model_uri.startswith("gs://"):
+            # Parse the bucket name and blob name from the URI
+            path_parts = model_uri[5:].split("/", 1)
+            bucket_name = path_parts[0]
+            blob_name = path_parts[1] if len(path_parts) > 1 else ""
+
+            # Download the model to a temporary directory
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_model_path = os.path.join(temp_dir, "model")
+                # Download the model from GCS to the temporary directory
+                download_from_gcs(bucket_name, blob_name, temp_model_path)
+
+                # Load the model from the temporary directory
+                self.model = mlflow.pyfunc.load_model(temp_model_path)
+        else:
+            # Load the model directly from the given URI
+            self.model = mlflow.pyfunc.load_model(model_uri)
 
     @staticmethod
     def load_and_clean_data(filename: str):
@@ -90,7 +109,7 @@ class TaxiRidePredictor(BaseEstimator, TransformerMixin):
                 "Invalid data format. Expect a DataFrame for training, a dict for a single prediction or a list of dict for batch predictions."
             )
 
-    def train(self, df_train, df_val, target):
+    def train(self, df_train, df_val, target, push_to_storage=False):
         y_train = df_train[target].values
         y_val = df_val[target].values
 
@@ -114,11 +133,16 @@ class TaxiRidePredictor(BaseEstimator, TransformerMixin):
             mlflow.sklearn.log_model(pipeline, artifact_path="model")
 
             run_id = mlflow.active_run().info.run_id
+            experiment_id = mlflow.active_run().info.experiment_id
             mlflow.end_run()
 
-            if self.model_uri is None:
-                self.model_uri = f"runs:/{run_id}/model"
-                self.load_model(self.model_uri)
+            self.model_uri = f"mlartifacts/{experiment_id}/{run_id}/artifacts/model"
+            self.load_model(self.model_uri)
+
+            if push_to_storage:
+                blob_name = "mlflow/models/taxi-predictor/latest/"
+                upload_to_gcs(self.model_uri, blob_name, bucket_name)
+                self.model_uri = f"gs://{bucket_name}/{blob_name}"
 
     def predict(self, rides):
         if not self.model:
@@ -138,59 +162,3 @@ class TaxiRidePredictor(BaseEstimator, TransformerMixin):
         preds = self.model.predict(X)
         result = pd.DataFrame({"predictions": [float(pred) for pred in preds]})
         return result
-
-
-if __name__ == "__main__":
-    # Prepare your data
-    df_train = TaxiRidePredictor.load_and_clean_data(
-        "data/green_tripdata_2021-01.parquet"
-    )
-    df_val = TaxiRidePredictor.load_and_clean_data(
-        "data/green_tripdata_2021-02.parquet"
-    )
-
-    # Specify the target
-    target = "duration"
-
-    # Specify the model parameters
-    params = dict(max_depth=20, n_estimators=100, min_samples_leaf=10, random_state=0)
-
-    # Initialize the predictor
-    predictor = TaxiRidePredictor(params=params)
-
-    # Train the model
-    predictor.train(df_train, df_val, target)
-
-    # Single ride prediction
-    single_ride = {"PULocationID": "10", "DOLocationID": "50", "trip_distance": 40}
-    single_duration = predictor.predict(single_ride)
-    print(
-        f"The predicted duration for the single ride is: {single_duration.iloc[0,0]} minutes"
-    )
-
-    # Batch prediction
-    batch_rides = [
-        {"PULocationID": "10", "DOLocationID": "50", "trip_distance": 40},
-        {"PULocationID": "20", "DOLocationID": "60", "trip_distance": 30},
-    ]
-    batch_durations = predictor.predict(batch_rides)
-    print(
-        f"The predicted durations for the batch rides are: \n{batch_durations['predictions']} minutes each"
-    )
-
-    # Process DataFrame and save predictions
-    year = 2021
-    month = 2
-    taxi_type = "green"
-    model_version = "v1.0.0"
-
-    input_file = f"https://d37ci6vzurychx.cloudfront.net/trip-data/{taxi_type}_tripdata_{year:04d}-{month:02d}.parquet"
-    output_file = f"output/{taxi_type}/{year:04d}-{month:02d}.parquet"
-
-    output_df = predictor.process_and_save(input_file, output_file, model_version)
-    print(output_df.head(3))
-
-    # Upload to GCS
-    bucket_name = "mlops-zoomcamp-bucket"
-    blob_name = f"data/predictions/{output_file.split('/')[-1]}"  # Specify your desired blob name in GCS
-    upload_to_gcs(output_file, blob_name, bucket_name)
