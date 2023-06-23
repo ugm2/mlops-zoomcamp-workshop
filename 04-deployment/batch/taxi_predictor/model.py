@@ -15,9 +15,6 @@ if os.environ.get("MLFLOW_TRACKING_URI") is None:
     os.environ["MLFLOW_TRACKING_URI"] = "http://localhost:5001"
 bucket_name = os.environ.get("BUCKET_NAME", "mlops-zoomcamp-bucket")
 
-mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
-mlflow.set_experiment("green-taxi-duration")
-
 
 class TaxiRidePredictor(BaseEstimator, TransformerMixin):
     def __init__(self, model_uri=None, params=None):
@@ -57,10 +54,14 @@ class TaxiRidePredictor(BaseEstimator, TransformerMixin):
         df[categorical] = df[categorical].astype(str)
         return df
 
-    def process_and_save(self, input_url: str, output_path: str, model_version: str):
-        # Load and clean data from URL
-        df = self.load_and_clean_data(input_url)
-
+    def save_results(
+        self,
+        df: pd.DataFrame,
+        y_pred: pd.Series,
+        output_file: str,
+        model_version: str,
+        upload_to_gcs: bool = True,
+    ):
         # Assign unique ride_id
         df["ride_id"] = [str(uuid4()) for _ in range(len(df))]
 
@@ -71,18 +72,23 @@ class TaxiRidePredictor(BaseEstimator, TransformerMixin):
         df["actual_duration"] = df["duration"]
 
         # Predict ride duration
-        df["predicted_duration"] = self.predict(df)["predictions"]
+        df["predicted_duration"] = y_pred
 
         # Difference between actual and predicted duration
         df["diff"] = df["actual_duration"] - df["predicted_duration"]
 
         # Create the necessary directories
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
         # Write DataFrame back to parquet file
-        df.to_parquet(output_path)
+        df.to_parquet(output_file)
 
-        print(f"Processed and saved data to: {output_path}")
+        print(f"Processed and saved data to: {output_file}")
+
+        # Upload to GCS
+        if upload_to_gcs:
+            blob_name = f"data/predictions/{output_file.split('/')[-1]}"  # Specify your desired blob name in GCS
+            upload_to_gcs(output_file, blob_name, bucket_name)
         return df
 
     def prepare_features(self, data):

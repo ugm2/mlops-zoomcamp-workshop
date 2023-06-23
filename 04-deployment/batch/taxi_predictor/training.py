@@ -1,6 +1,11 @@
+import os
 import argparse
 from taxi_predictor.model import TaxiRidePredictor
 from taxi_predictor.utils import upload_to_gcs
+import mlflow
+
+mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
+mlflow.set_experiment("green-taxi-duration")
 
 
 def run_training(

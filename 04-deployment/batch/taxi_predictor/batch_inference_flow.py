@@ -1,16 +1,6 @@
 import argparse
-import pandas as pd
-import uuid
 from taxi_predictor.model import TaxiRidePredictor
-from taxi_predictor.utils import upload_to_gcs
-from prefect import task, Flow
-
-
-def generate_uuids(n):
-    ride_ids = []
-    for i in range(n):
-        ride_ids.append(str(uuid.uuid4()))
-    return ride_ids
+from prefect import task, flow
 
 
 @task
@@ -26,69 +16,70 @@ def train_model(df_train, df_val, target, params):
 
 
 @task
-def predict_duration(model_uri, year, month, taxi_type, model_version, bucket_name):
-    predictor = TaxiRidePredictor()
-    predictor.load_model(model_uri)
+def load_model(model_uri):
+    return TaxiRidePredictor(model_uri=model_uri)
 
-    # ... the rest of the run_prediction code ...
 
-    # Batch prediction on another dataset
+@task
+def load_data(predictor, taxi_type, year, month):
+    # Load and clean data from URL
     input_file = f"https://d37ci6vzurychx.cloudfront.net/trip-data/{taxi_type}_tripdata_{year:04d}-{month:02d}.parquet"
+    df = predictor.load_and_clean_data(input_file)
+    return df
+
+
+@task
+def predict_ride_batch(df, predictor):
+    return predictor.predict(df)["predictions"]
+
+
+@task
+def save_results(predictor, df, y_pred, output_file, model_version, upload_to_gcs=True):
+    return predictor.save_results(
+        df, y_pred, output_file, model_version, upload_to_gcs=upload_to_gcs
+    )
+
+
+@flow(name="TaxiRideDurationPrediction")
+def ride_duration_prediction(
+    model_uri, year, month, taxi_type, model_version, upload_to_gcs=True
+):
+    predictor = load_model(model_uri=model_uri)
+
+    df = load_data(predictor, taxi_type, year, month)
+
     output_file = f"output/{taxi_type}/{year:04d}-{month:02d}.parquet"
 
-    output_df = predictor.process_and_save(input_file, output_file, model_version)
+    y_pred = predict_ride_batch(df, predictor)
 
-    # Upload to GCS
-    blob_name = f"data/predictions/{output_file.split('/')[-1]}"  # Specify your desired blob name in GCS
-    upload_to_gcs(output_file, blob_name, bucket_name)
+    output_df = save_results(
+        predictor, df, y_pred, output_file, model_version, upload_to_gcs=upload_to_gcs
+    )
 
     return output_df
 
 
-@Flow("TaxiRideDurationPrediction")
-def ride_duration_prediction(
-    train_file,
-    val_file,
-    target,
-    params,
-    year,
-    month,
-    taxi_type,
-    model_version,
-    bucket_name,
-):
-    df_train = load_and_clean_data(train_file)
-    df_val = load_and_clean_data(val_file)
-    model_uri = train_model(df_train, df_val, target, params)
-    results = predict_duration(
-        model_uri, year, month, taxi_type, model_version, bucket_name
-    )
-
-
 def run():
     parser = argparse.ArgumentParser(description="Taxi Ride Predictor")
-    # ... same argparse setup as in your code ...
+    parser.add_argument(
+        "--model_uri",
+        default="gs://mlops-zoomcamp-bucket/mlflow/models/taxi-predictor/latest/",
+    )
+    parser.add_argument("--year", type=int, default=2021)
+    parser.add_argument("--month", type=int, default=2)
+    parser.add_argument("--taxi_type", default="green")
+    parser.add_argument("--model_version", default="v1.0.0")
+    parser.add_argument("--upload_to_gcs", action="store_true")
 
     args = parser.parse_args()
 
-    # Setting the params dictionary from argparse arguments
-    params = {
-        "max_depth": args.max_depth,
-        "n_estimators": args.n_estimators,
-        "min_samples_leaf": args.min_samples_leaf,
-        "random_state": args.random_state,
-    }
-
-    ride_duration_prediction.run(
-        train_file=args.train_file,
-        val_file=args.val_file,
-        target=args.target,
-        params=params,
+    ride_duration_prediction(
+        model_uri=args.model_uri,
         year=args.year,
         month=args.month,
         taxi_type=args.taxi_type,
         model_version=args.model_version,
-        bucket_name=args.bucket_name,
+        upload_to_gcs=args.upload_to_gcs,
     )
 
 
