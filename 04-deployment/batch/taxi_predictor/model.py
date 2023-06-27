@@ -76,7 +76,7 @@ class TaxiRidePredictor(BaseEstimator, TransformerMixin):
         y_pred: pd.Series,
         output_file: str,
         model_version: str,
-        upload_to_gcs: bool = True,
+        _upload_to_gcs: bool = True,
     ):
         # Assign unique ride_id
         df["ride_id"] = [str(uuid4()) for _ in range(len(df))]
@@ -102,7 +102,7 @@ class TaxiRidePredictor(BaseEstimator, TransformerMixin):
         logger.info(f"Processed and saved data to: {output_file}")
 
         # Upload to GCS
-        if upload_to_gcs:
+        if _upload_to_gcs:
             blob_name = f"data/predictions/{output_file.split('/')[-1]}"  # Specify your desired blob name in GCS
             upload_to_gcs(output_file, blob_name, bucket_name)
         return df

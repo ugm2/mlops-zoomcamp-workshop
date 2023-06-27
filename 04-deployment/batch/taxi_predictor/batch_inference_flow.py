@@ -1,10 +1,11 @@
 import argparse
 from taxi_predictor.model import TaxiRidePredictor
 from prefect import task, flow, get_run_logger
+import pandas as pd
 
 
 @task
-def load_and_clean_data(file):
+def load_and_clean_data(file: str) -> pd.DataFrame:
     """
     Task to load and clean data.
     """
@@ -14,7 +15,9 @@ def load_and_clean_data(file):
 
 
 @task
-def train_model(df_train, df_val, target, params):
+def train_model(
+    df_train: pd.DataFrame, df_val: pd.DataFrame, target: str, params: dict
+) -> str:
     """
     Task to train the Taxi Ride Predictor model.
     """
@@ -26,7 +29,7 @@ def train_model(df_train, df_val, target, params):
 
 
 @task
-def load_model(model_uri):
+def load_model(model_uri: str) -> TaxiRidePredictor:
     """
     Task to load a model from a given URI.
     """
@@ -36,7 +39,9 @@ def load_model(model_uri):
 
 
 @task
-def load_data(predictor, taxi_type, year, month):
+def load_data(
+    predictor: TaxiRidePredictor, taxi_type: str, year: int, month: int
+) -> pd.DataFrame:
     """
     Task to load and clean data from URL.
     """
@@ -48,7 +53,7 @@ def load_data(predictor, taxi_type, year, month):
 
 
 @task
-def predict_ride_batch(df, predictor):
+def predict_ride_batch(df: pd.DataFrame, predictor: TaxiRidePredictor) -> pd.Series:
     """
     Task to predict ride duration for a batch of data.
     """
@@ -58,21 +63,33 @@ def predict_ride_batch(df, predictor):
 
 
 @task
-def save_results(predictor, df, y_pred, output_file, model_version, upload_to_gcs=True):
+def save_results(
+    predictor: TaxiRidePredictor,
+    df: pd.DataFrame,
+    y_pred: pd.Series,
+    output_file: str,
+    model_version: str,
+    _upload_to_gcs: bool = True,
+) -> pd.DataFrame:
     """
     Task to save prediction results.
     """
     logger = get_run_logger()
     logger.info(f"Saving results to {output_file}...")
     return predictor.save_results(
-        df, y_pred, output_file, model_version, upload_to_gcs=upload_to_gcs
+        df, y_pred, output_file, model_version, _upload_to_gcs=_upload_to_gcs
     )
 
 
 @flow(name="TaxiRideDurationPrediction")
 def ride_duration_prediction(
-    model_uri, year, month, taxi_type, model_version, upload_to_gcs=True
-):
+    model_uri: str = "gs://mlops-zoomcamp-bucket/mlflow/models/taxi-predictor/latest/",
+    year: int = 2021,
+    month: int = 2,
+    taxi_type: str = "green",
+    model_version: str = "v1.0.0",
+    upload_to_gcs: bool = True,
+) -> pd.DataFrame:
     """
     Prefect flow for taxi ride duration prediction.
     """
@@ -85,7 +102,7 @@ def ride_duration_prediction(
     y_pred = predict_ride_batch(df, predictor)
 
     output_df = save_results(
-        predictor, df, y_pred, output_file, model_version, upload_to_gcs=upload_to_gcs
+        predictor, df, y_pred, output_file, model_version, _upload_to_gcs=upload_to_gcs
     )
 
     return output_df

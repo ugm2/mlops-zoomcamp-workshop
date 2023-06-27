@@ -1,0 +1,61 @@
+###
+### A complete description of a Prefect Deployment for flow 'TaxiRideDurationPrediction-Backfill'
+###
+name: batch-inference-backfill
+description: null
+version: 3df2922d650e3ddbd8a1b572f628456c
+# The work queue that will handle this deployment's runs
+work_queue_name: local-work
+work_pool_name: null
+tags: []
+parameters: {}
+schedule: null
+is_schedule_active: null
+infra_overrides: {}
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  block_type_slug: process
+  _block_type_slug: process
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: TaxiRideDurationPrediction-Backfill
+manifest_path: null
+storage: null
+path: /Users/unaigaraymaestre/Desktop/Developer/mlops-zoomcamp-workshop/04-deployment/batch
+entrypoint: taxi_predictor/batch_inference_backfill_flow.py:ride_duration_prediction_backfill
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties:
+    model_uri:
+      title: model_uri
+      default: gs://mlops-zoomcamp-bucket/mlflow/models/taxi-predictor/latest/
+      position: 0
+      type: string
+    taxi_type:
+      title: taxi_type
+      default: green
+      position: 1
+      type: string
+    model_version:
+      title: model_version
+      default: v1.0.0
+      position: 2
+      type: string
+    upload_to_gcs:
+      title: upload_to_gcs
+      default: true
+      position: 3
+      type: boolean
+  required: null
+  definitions: null
+timestamp: '2023-06-27T10:35:46.688230+00:00'
+triggers: []

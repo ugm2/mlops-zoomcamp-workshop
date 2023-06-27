@@ -1,0 +1,68 @@
+###
+### A complete description of a Prefect Deployment for flow 'TaxiRideDurationPrediction'
+###
+name: batch-inference
+description: Prefect flow for taxi ride duration prediction.
+version: 88bfdfa17d5e9e49997c8b698e711a4a
+# The work queue that will handle this deployment's runs
+work_queue_name: local-work
+work_pool_name: default-agent-pool
+tags: []
+parameters: {}
+schedule: null
+is_schedule_active: true
+infra_overrides: {}
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: TaxiRideDurationPrediction
+manifest_path: null
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  _block_document_id: ef224680-6182-40a5-a773-d0d08349bc3a
+  _block_document_name: anonymous-c9f0b70e-83ee-44c5-ad6b-3e72dd455bb7
+  _is_anonymous: true
+  block_type_slug: process
+  _block_type_slug: process
+storage: null
+path: /Users/unaigaraymaestre/Desktop/Developer/mlops-zoomcamp-workshop/04-deployment/batch
+entrypoint: taxi_predictor/batch_inference_flow.py:ride_duration_prediction
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties:
+    model_uri:
+      title: model_uri
+      default: gs://mlops-zoomcamp-bucket/mlflow/models/taxi-predictor/latest/
+      position: 0
+    year:
+      title: year
+      default: 2021
+      position: 1
+    month:
+      title: month
+      default: 2
+      position: 2
+    taxi_type:
+      title: taxi_type
+      default: green
+      position: 3
+    model_version:
+      title: model_version
+      default: v1.0.0
+      position: 4
+    upload_to_gcs:
+      title: upload_to_gcs
+      default: true
+      position: 5
+  required: null
+  definitions: null
+timestamp: '2023-06-27T10:17:21.828395+00:00'
+triggers: []

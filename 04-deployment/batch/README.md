@@ -9,3 +9,11 @@ Logging:
 Prefect Cloud:
 
 `prefect config set PREFECT_API_URL='https://api.prefect.cloud/api/accounts/1f551fe2-07fb-41b7-99af-7e382958ab33/workspaces/1a6f579a-9398-4e42-a9d3-e58bfc9a954c'`
+
+## Deployment
+
+`prefect deployment build taxi_predictor/batch_inference_flow.py:ride_duration_prediction --name batch-inference --work-queue local-work`
+
+`prefect deployment apply ride_duration_prediction-deployment.yaml`
+
+`prefect agent start -q local-work`
