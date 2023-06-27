@@ -1,5 +1,10 @@
 from google.cloud import storage
 import os
+import logging
+
+logger = logging.getLogger("TaxiRidePredictor-Utils")
+logger.propagate = True
+logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 
 def upload_to_gcs(source_path, destination_blob_name, bucket_name):
@@ -11,7 +16,6 @@ def upload_to_gcs(source_path, destination_blob_name, bucket_name):
     destination_blob_name {str} -- Desired blob name or prefix in GCS.
     bucket_name {str} -- GCS bucket name.
     """
-
     # Create a client
     storage_client = storage.Client()
 
@@ -23,7 +27,7 @@ def upload_to_gcs(source_path, destination_blob_name, bucket_name):
         # Upload the file
         blob = bucket.blob(destination_blob_name)
         blob.upload_from_filename(source_path)
-        print(f"File {source_path} uploaded to {destination_blob_name}.")
+        logger.info(f"File {source_path} uploaded to {destination_blob_name}.")
     elif os.path.isdir(source_path):
         # Upload files in the directory
         for root, dirs, files in os.walk(source_path):
@@ -36,9 +40,9 @@ def upload_to_gcs(source_path, destination_blob_name, bucket_name):
                 # Upload the file
                 blob = bucket.blob(blob_name)
                 blob.upload_from_filename(file_path)
-                print(f"File {file_path} uploaded to {blob_name}.")
+                logger.info(f"File {file_path} uploaded to {blob_name}.")
     else:
-        print("Source path is neither a file nor a directory.")
+        logger.error("Source path is neither a file nor a directory.")
 
 
 def download_from_gcs(bucket_name, source_blob_name, destination_path):
@@ -50,7 +54,6 @@ def download_from_gcs(bucket_name, source_blob_name, destination_path):
     source_blob_name {str} -- Blob name or prefix in GCS.
     destination_path {str} -- Local path to save the file or directory.
     """
-
     # Create a client
     storage_client = storage.Client()
 
@@ -73,10 +76,10 @@ def download_from_gcs(bucket_name, source_blob_name, destination_path):
             os.makedirs(os.path.dirname(blob_target_path), exist_ok=True)
             # Download the blob
             blob.download_to_filename(blob_target_path)
-            print(f"Blob {blob.name} downloaded to {blob_target_path}.")
+            logger.info(f"Blob {blob.name} downloaded to {blob_target_path}.")
     else:
         # It's a single blob, download it
         blob = bucket.blob(source_blob_name)
         # Download the blob to a file
         blob.download_to_filename(destination_path)
-        print(f"Blob {source_blob_name} downloaded to {destination_path}.")
+        logger.info(f"Blob {source_blob_name} downloaded to {destination_path}.")
