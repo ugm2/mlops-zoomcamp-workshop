@@ -97,7 +97,7 @@ For that, you'll need to use a base image that we prepared.
 
 This is how it looks like:
 
-```
+```dockerfile
 FROM python:3.10.0-slim
 
 WORKDIR /app
@@ -111,7 +111,7 @@ which you should use as your base image.
 
 That is, this is how your Dockerfile should start:
 
-```docker
+```dockerfile
 FROM svizor/zoomcamp-model:mlops-3.10.0-slim
 
 # do stuff here
@@ -126,8 +126,15 @@ to use the pickle file already in the image.
 Now run the script with docker. What's the mean predicted duration
 for April 2022?
 
+To build and run the docker for the given date:
+
+```shell
+docker build -t taxi-predictor-homework .
+docker run -it --rm taxi-predictor-homework --year 2022 --month 4
+```
+
 * 7.92
-* 12.83
+* **->12.83<--**
 * 17.92
 * 22.83
 
@@ -138,6 +145,17 @@ doesn't seem very practical. Typically, after creating the output
 file, we upload it to the cloud storage.
 
 Modify your code to upload the parquet file to S3/GCS/etc.
+
+You can upload to GS with:
+
+```shell
+docker run -it --rm -e GOOGLE_APPLICATION_CREDENTIALS="/app/key.json" \
+                    -e BUCKET_NAME=mlops-zoomcamp-bucket\
+                    -v /Users/unaigaraymaestre/.gcp/mlops-389311-35dcdbcd43f6.json:/app/key.json \
+                    taxi-predictor-homework --year 2022 --month 4 --upload-to-gcs
+```
+
+Where you should put your own GOOGLE_APPLICATION_CREDENTIALS and your own bucket.
 
 ## Publishing the image to dockerhub
 

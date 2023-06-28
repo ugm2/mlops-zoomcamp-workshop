@@ -6,11 +6,14 @@ import pickle
 import argparse
 import pandas as pd
 import logging
+from utils import upload_to_gcs
 
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=os.environ.get("LOGGER_LEVEL", "INFO"),
+    format="%(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger("TaxiRidePredictor")
+bucket_name = os.environ.get("BUCKET_NAME", "mlops-zoomcamp-bucket")
 
 
 def load_model(model_path):
@@ -49,7 +52,7 @@ def predict_duration(dv, model, df):
     return y_pred
 
 
-def save_results(df, y_pred, year, month, taxi_type):
+def save_results(df, y_pred, year, month, taxi_type, _upload_to_gcs=False):
     logger.info("Saving results")
     df["ride_id"] = f"{year:04d}/{month:02d}_" + df.index.astype("str")
     df["duration_prediction"] = y_pred
@@ -60,15 +63,20 @@ def save_results(df, y_pred, year, month, taxi_type):
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     df_result.to_parquet(output_file, engine="pyarrow", compression=None, index=False)
     logger.info(f"Results saved to {output_file}")
+    # Upload to GCS
+    if _upload_to_gcs:
+        blob_name = f"data/predictions/{output_file.split('/')[-1]}"
+        logger.info(f"Uploading to GCS: {bucket_name}/{blob_name}")
+        upload_to_gcs(output_file, blob_name, bucket_name)
 
 
-def main(year, month, taxi_type="yellow", model_path="model.bin"):
+def main(year, month, taxi_type="yellow", model_path="model.bin", _upload_to_gcs=False):
     logger.info("Starting process")
 
     dv, model = load_model(model_path)
     df = read_data(year, month, taxi_type)
     y_pred = predict_duration(dv, model, df)
-    save_results(df, y_pred, year, month, taxi_type)
+    save_results(df, y_pred, year, month, taxi_type, _upload_to_gcs=_upload_to_gcs)
 
     # Calculate and print standard deviation of predictions
     stddev = y_pred.std()
@@ -78,8 +86,8 @@ def main(year, month, taxi_type="yellow", model_path="model.bin"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Predict taxi ride duration.")
-    parser.add_argument("--year", type=int, required=True, help="Year (e.g. 2022)")
-    parser.add_argument("--month", type=int, required=True, help="Month (e.g. 2)")
+    parser.add_argument("--year", type=int, default=2022, help="Year (e.g. 2022)")
+    parser.add_argument("--month", type=int, default=2, help="Month (e.g. 2)")
     parser.add_argument(
         "--taxi-type", type=str, default="yellow", help="Type of taxi (default: yellow)"
     )
@@ -89,6 +97,12 @@ if __name__ == "__main__":
         default="model.bin",
         help="Path to model file (default: model.bin)",
     )
+    parser.add_argument(
+        "--upload-to-gcs",
+        action="store_true",
+        default=False,
+        help="Upload to GCS (default: False)",
+    )
 
     args = parser.parse_args()
 
@@ -97,4 +111,5 @@ if __name__ == "__main__":
         month=args.month,
         taxi_type=args.taxi_type,
         model_path=args.model_path,
+        _upload_to_gcs=args.upload_to_gcs,
     )
