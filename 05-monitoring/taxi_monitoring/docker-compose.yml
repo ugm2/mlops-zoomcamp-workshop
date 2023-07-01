@@ -35,6 +35,8 @@ services:
       - "3000:3000"
     volumes:
       - ./config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
+      - ./config/grafana_dashboards.yaml:/etc/grafana/provisioning/datasources/dashboards.yaml:ro
+      - ./dashboards:/opt/grafana/dashboards
     networks:
       - back-tier
       - front-tier
