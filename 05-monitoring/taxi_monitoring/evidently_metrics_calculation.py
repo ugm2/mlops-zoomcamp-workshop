@@ -9,7 +9,7 @@ import io
 import psycopg
 import joblib
 
-# from prefect import task, flow
+from prefect import task, flow
 
 from evidently.report import Report
 from evidently import ColumnMapping
@@ -61,7 +61,7 @@ report = Report(
 )
 
 
-# @task
+@task
 def prep_db():
     with psycopg.connect(
         "host=localhost port=5432 user=postgres password=example", autocommit=True
@@ -75,7 +75,7 @@ def prep_db():
             conn.execute(create_table_statement)
 
 
-# @task
+@task
 def calculate_metrics_postgresql(curr, i):
     current_data = raw_data[
         (raw_data.lpep_pickup_datetime >= (begin + datetime.timedelta(i)))
@@ -112,7 +112,7 @@ def calculate_metrics_postgresql(curr, i):
     )
 
 
-# @flow
+@flow
 def batch_monitoring_backfill():
     prep_db()
     last_send = datetime.datetime.now() - datetime.timedelta(seconds=10)
