@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "taxi-monitoring"
+version = "0.1.0"
+description = ""
+authors = ["ugm2 <unaigaraymaestre@gmail.com>"]
+readme = "README.md"
+packages = []
+
+[tool.poetry.dependencies]
+python = "^3.9"
+prefect = "^2.10.17"
+tqdm = "^4.65.0"
+requests = "^2.31.0"
+joblib = "^1.3.0"
+pyarrow = "^12.0.1"
+pandas = "^2.0.3"
+numpy = "1.24.4"
+scikit-learn = "^1.2.2"
+jupyter = "^1.0.0"
+matplotlib = "^3.7.1"
+psycopg = "^3.1.9"
+llvmlite = "0.40.1"
+evidently = "0.3.3"
+psycopg-binary = "^3.1.9"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
