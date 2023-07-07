@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "taxi-predictor"
+version = "0.1.0"
+description = ""
+authors = ["ugm2 <unaigaraymaestre@gmail.com>"]
+packages = [{include = "taxi_predictor"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+scikit-learn = "^1.2.2"
+pandas = "^2.0.3"
+pyarrow = "^12.0.1"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
